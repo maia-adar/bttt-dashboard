@@ -1,151 +1,53 @@
 import streamlit as st
 import pandas as pd
-import math
-from pathlib import Path
+from datetime import datetime
+import requests
+from PIL import Image
+from io import BytesIO
 
-# Set the title and favicon that appear in the Browser's tab bar.
-st.set_page_config(
-    page_title='GDP dashboard',
-    page_icon=':earth_americas:', # This is an emoji shortcode. Could be a URL too.
-)
+st.set_page_config(page_title="Sleep Dashboard", layout="centered")
+st.title("Dashboard: The Big Taping Truth Trial")
 
-# -----------------------------------------------------------------------------
-# Declare some useful functions.
+# Today’s date format
+today = datetime.today().strftime("%Y-%m-%d")
 
-@st.cache_data
-def get_gdp_data():
-    """Grab GDP data from a CSV file.
+# File IDs (from Google Drive)
+FILE_IDS = {
+    "image": "1-D4sGmzF1syGUTUO_5UfloMLpLRqPnh8",
+    "funnel": "1-Apq66H0DOEEfuCp5ghL4nRIOMb1WRiL",
+    "taping": "1-9-FZjceasHwrFQ5y6H9I7Bs7myPjixW"
+}
 
-    This uses caching to avoid having to read the file every time. If we were
-    reading from an HTTP endpoint instead of a file, it's a good idea to set
-    a maximum age to the cache with the TTL argument: @st.cache_data(ttl='1d')
-    """
+# Build direct links
+def drive_url(file_id):
+    return f"https://drive.google.com/uc?id={file_id}"
 
-    # Instead of a CSV on disk, you could read from an HTTP endpoint here too.
-    DATA_FILENAME = Path(__file__).parent/'data/gdp_data.csv'
-    raw_gdp_df = pd.read_csv(DATA_FILENAME)
+# Show image
+image_url = drive_url(FILE_IDS["image"])
 
-    MIN_YEAR = 1960
-    MAX_YEAR = 2022
+try:
+    response = requests.get(image_url)
+    image = Image.open(BytesIO(response.content))
+    st.image(image, use_container_width=True)
+except Exception as e:
+    st.error("Failed to load image.")
+    st.exception(e)
 
-    # The data above has columns like:
-    # - Country Name
-    # - Country Code
-    # - [Stuff I don't care about]
-    # - GDP for 1960
-    # - GDP for 1961
-    # - GDP for 1962
-    # - ...
-    # - GDP for 2022
-    #
-    # ...but I want this instead:
-    # - Country Name
-    # - Country Code
-    # - Year
-    # - GDP
-    #
-    # So let's pivot all those year-columns into two: Year and GDP
-    gdp_df = raw_gdp_df.melt(
-        ['Country Code'],
-        [str(x) for x in range(MIN_YEAR, MAX_YEAR + 1)],
-        'Year',
-        'GDP',
-    )
+# Show funnel data
+st.subheader("Participant Funnel")
+try:
+    funnel_df = pd.read_csv(drive_url(FILE_IDS["funnel"]))
+    st.dataframe(funnel_df.style.hide(axis="index"))
+except Exception as e:
+    st.error("Couldn't load funnel data.")
+    st.exception(e)
 
-    # Convert years from string to integers
-    gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
-
-    return gdp_df
-
-gdp_df = get_gdp_data()
-
-# -----------------------------------------------------------------------------
-# Draw the actual page
-
-# Set the title that appears at the top of the page.
-'''
-# :earth_americas: GDP dashboard
-
-Browse GDP data from the [World Bank Open Data](https://data.worldbank.org/) website. As you'll
-notice, the data only goes to 2022 right now, and datapoints for certain years are often missing.
-But it's otherwise a great (and did I mention _free_?) source of data.
-'''
-
-# Add some spacing
-''
-''
-
-min_value = gdp_df['Year'].min()
-max_value = gdp_df['Year'].max()
-
-from_year, to_year = st.slider(
-    'Which years are you interested in?',
-    min_value=min_value,
-    max_value=max_value,
-    value=[min_value, max_value])
-
-countries = gdp_df['Country Code'].unique()
-
-if not len(countries):
-    st.warning("Select at least one country")
-
-selected_countries = st.multiselect(
-    'Which countries would you like to view?',
-    countries,
-    ['DEU', 'FRA', 'GBR', 'BRA', 'MEX', 'JPN'])
-
-''
-''
-''
-
-# Filter the data
-filtered_gdp_df = gdp_df[
-    (gdp_df['Country Code'].isin(selected_countries))
-    & (gdp_df['Year'] <= to_year)
-    & (from_year <= gdp_df['Year'])
-]
-
-st.header('GDP over time', divider='gray')
-
-''
-
-st.line_chart(
-    filtered_gdp_df,
-    x='Year',
-    y='GDP',
-    color='Country Code',
-)
-
-''
-''
-
-
-first_year = gdp_df[gdp_df['Year'] == from_year]
-last_year = gdp_df[gdp_df['Year'] == to_year]
-
-st.header(f'GDP in {to_year}', divider='gray')
-
-''
-
-cols = st.columns(4)
-
-for i, country in enumerate(selected_countries):
-    col = cols[i % len(cols)]
-
-    with col:
-        first_gdp = first_year[first_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-        last_gdp = last_year[last_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-
-        if math.isnan(first_gdp):
-            growth = 'n/a'
-            delta_color = 'off'
-        else:
-            growth = f'{last_gdp / first_gdp:,.2f}x'
-            delta_color = 'normal'
-
-        st.metric(
-            label=f'{country} GDP',
-            value=f'{last_gdp:,.0f}B',
-            delta=growth,
-            delta_color=delta_color
-        )
+# Show taping data
+st.subheader("Total Amount of Data Collected")
+try:
+    taping_df = pd.read_csv(drive_url(FILE_IDS["taping"]))
+    taping_df.columns = ["Data Type", "Amount"]
+    st.dataframe(taping_df.style.hide(axis="index"))
+except Exception as e:
+    st.error("Couldn't load taping data.")
+    st.exception(e)
