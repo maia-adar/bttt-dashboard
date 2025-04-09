@@ -6,7 +6,10 @@ from PIL import Image
 from io import BytesIO
 
 st.set_page_config(page_title="Sleep Dashboard", layout="centered")
-st.title("Dashboard: The Big Taping Truth Trial")
+st.markdown(
+    "<h1 style='text-align: center; color: #17065b;'>Dashboard:<br>The Big Taping Truth Trial</h1>",
+    unsafe_allow_html=True
+)
 
 # Today’s date format
 today = datetime.today().strftime("%Y-%m-%d")
@@ -34,16 +37,18 @@ except Exception as e:
     st.exception(e)
 
 # Show funnel data
-st.subheader("Participant Funnel")
+st.subheader("Current Number of Participants")
 try:
     funnel_df = pd.read_csv(drive_url(FILE_IDS["funnel"]))
-    st.dataframe(funnel_df.style.hide(axis="index"))
+    num_participants = funnel_df["Participants"].iloc[2]  # adjust column name if needed
+    st.markdown(f"<h1 style='text-align: center; color: #17065b;'>{int(num_participants):,}</h1>", unsafe_allow_html=True)
+
 except Exception as e:
     st.error("Couldn't load funnel data.")
     st.exception(e)
 
 # Show taping data
-st.subheader("Total Amount of Data Collected")
+st.subheader("Current Amount of Data Collected")
 try:
     taping_df = pd.read_csv(drive_url(FILE_IDS["taping"]))
     taping_df.columns = ["Data Type", "Amount"]
