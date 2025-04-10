@@ -25,17 +25,6 @@ FILE_IDS = {
 def drive_url(file_id):
     return f"https://drive.google.com/uc?id={file_id}"
 
-# Show image
-image_url = drive_url(FILE_IDS["image"])
-
-try:
-    response = requests.get(image_url)
-    image = Image.open(BytesIO(response.content))
-    st.image(image, use_container_width=True)
-except Exception as e:
-    st.error("Failed to load image.")
-    st.exception(e)
-
 # Show funnel data
 st.subheader("Current Number of Participants")
 try:
@@ -46,6 +35,21 @@ try:
 except Exception as e:
     st.error("Couldn't load funnel data.")
     st.exception(e)
+
+# Show image
+image_url = drive_url(FILE_IDS["image"])
+
+st.subheader("Current Results")
+st.text("Note: Final results will be based on a more rigorous analysis method.")
+try:
+    response = requests.get(image_url)
+    image = Image.open(BytesIO(response.content))
+    st.image(image, use_container_width=True)
+except Exception as e:
+    st.error("Failed to load image.")
+    st.exception(e)
+
+
 
 # Show taping data
 st.subheader("Current Amount of Data Collected")
