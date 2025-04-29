@@ -29,7 +29,7 @@ def drive_url(file_id):
 st.subheader("Current Number of Participants")
 try:
     funnel_df = pd.read_csv(drive_url(FILE_IDS["funnel"]))
-    num_participants = funnel_df["Participants"].iloc[2]  # adjust column name if needed
+    num_participants = funnel_df["Participants"].iloc[4]  # adjust column name if needed
     st.markdown(f"<h1 style='text-align: center; color: #17065b;'>{int(num_participants):,}</h1>", unsafe_allow_html=True)
 
 except Exception as e:
