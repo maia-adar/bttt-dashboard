@@ -5,11 +5,26 @@ import requests
 from PIL import Image
 from io import BytesIO
 
+st.cache_data.clear()
+
 st.set_page_config(page_title="Sleep Dashboard", layout="centered")
-st.markdown(
-    "<h1 style='text-align: center; color: #17065b;'>Dashboard:<br>The Big Taping Truth Trial</h1>",
-    unsafe_allow_html=True
-)
+
+st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    
+    /* Apply Inter font globally */
+    html, body, div, span, appview-container, [class*="css"], .stText, .stMarkdown, .stDataFrame, .stButton, .stHeader, h1, h2, h3, h4, h5, h6, table, th, td {
+        font-family: 'Inter', sans-serif !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+
+# st.markdown(
+#     "<h1 style='text-align: center; color: #17065b;'>Dashboard:<br>The Big Taping Truth Trial</h1>",
+#     unsafe_allow_html=True
+# )
 
 # Today’s date format
 today = datetime.today().strftime("%Y-%m-%d")
