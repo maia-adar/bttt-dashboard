@@ -17,6 +17,11 @@ st.markdown("""
     html, body, div, span, appview-container, [class*="css"], .stText, .stMarkdown, .stDataFrame, .stButton, .stHeader, h1, h2, h3, h4, h5, h6, table, th, td {
         font-family: 'Inter', sans-serif !important;
     }
+
+    /* Apply Inter font to Streamlit tables */
+    .dataframe table {
+        font-family: 'Inter', sans-serif !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -55,7 +60,6 @@ except Exception as e:
 image_url = drive_url(FILE_IDS["image"])
 
 st.subheader("Current Results")
-st.text("Note: Final results will be based on a more rigorous analysis method.")
 try:
     response = requests.get(image_url)
     image = Image.open(BytesIO(response.content))
@@ -63,7 +67,11 @@ try:
 except Exception as e:
     st.error("Failed to load image.")
     st.exception(e)
-
+st.markdown("""
+    <p style="font-size:12px; color:gray;">
+        Note: Do not publish. This dashboard displays combined averages, but final results must be based on a within-subjects analysis.
+    </p>
+    """, unsafe_allow_html=True)
 
 
 # Show taping data
@@ -71,6 +79,7 @@ st.subheader("Current Amount of Data Collected")
 try:
     taping_df = pd.read_csv(drive_url(FILE_IDS["taping"]))
     taping_df.columns = ["Data Type", "Amount"]
+    taping_df = taping_df.reset_index(drop=True)
     st.dataframe(taping_df.style.hide(axis="index"))
 except Exception as e:
     st.error("Couldn't load taping data.")
