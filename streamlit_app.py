@@ -38,7 +38,8 @@ today = datetime.today().strftime("%Y-%m-%d")
 FILE_IDS = {
     "image": "1-D4sGmzF1syGUTUO_5UfloMLpLRqPnh8",
     "funnel": "1-Apq66H0DOEEfuCp5ghL4nRIOMb1WRiL",
-    "taping": "1-9-FZjceasHwrFQ5y6H9I7Bs7myPjixW"
+    "taping": "1-9-FZjceasHwrFQ5y6H9I7Bs7myPjixW",
+    "date": "1JnMsTkRbQuF3ir0ROhd9IR5RL70vt13F"
 }
 
 # Build direct links
@@ -60,6 +61,21 @@ except Exception as e:
 image_url = drive_url(FILE_IDS["image"])
 
 st.subheader("Current Results")
+# Show the last updated date
+try:
+    # Read the date file
+    date_df = pd.read_csv(drive_url(FILE_IDS["date"]), header=None)
+    last_updated_date = date_df.iloc[1, 0]  # Get the second cell (vertically)
+
+    # Display the date in small, gray font
+    st.markdown(f"""
+        <p style="font-size:12px; color:gray;">
+            Last updated: {last_updated_date}
+        </p>
+        """, unsafe_allow_html=True)
+except Exception as e:
+    st.error("Couldn't load the last updated date.")
+    st.exception(e)
 try:
     response = requests.get(image_url)
     image = Image.open(BytesIO(response.content))
